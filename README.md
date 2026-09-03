@@ -1,3 +1,14 @@
+---
+title: JobSeek AI
+emoji: 💼
+colorFrom: yellow
+colorTo: gray
+sdk: docker
+app_port: 7860
+pinned: false
+short_description: Cari lowongan kerja & magang Jabodetabek, lalu siapkan CV dan draf emailnya.
+---
+
 # 🤖 JobSeek AI
 
 Agent pribadi untuk berburu kerja dan magang di **Jakarta, Kota Tangerang, dan

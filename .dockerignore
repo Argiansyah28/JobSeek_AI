@@ -1,0 +1,19 @@
+# Jangan ikutkan virtualenv lokal (ratusan MB) ke dalam image
+venv/
+env/
+.venv/
+
+__pycache__/
+*.py[cod]
+
+# Rahasia lokal — di Spaces diisi lewat menu Secrets
+.env
+
+# Hasil generate AI
+output/*.txt
+
+.git/
+.gitignore
+.DS_Store
+.vscode/
+.idea/
