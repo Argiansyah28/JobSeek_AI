@@ -4,14 +4,36 @@ Dapatkan API key gratis di https://aistudio.google.com/apikey
 """
 
 import os
+from pathlib import Path
+
+
+def _load_dotenv() -> None:
+    """
+    Baca file .env kalau ada, tanpa perlu paket tambahan.
+    Environment variable yang sudah diset di shell tetap menang, supaya
+    di hosting (Render) nilai dari dashboard tidak tertimpa file .env.
+    """
+    env_file = Path(__file__).parent / ".env"
+    if not env_file.exists():
+        return
+
+    for line in env_file.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        os.environ.setdefault(key.strip(), value.strip().strip("\"'"))
+
+
+_load_dotenv()
 
 # === API KEY (GRATIS) ===
-# Sengaja HANYA dibaca dari environment variable, tidak ditulis di file ini.
-# Repo ini publik — API key yang ter-commit harus dianggap bocor selamanya,
-# karena tetap tersimpan di riwayat git meski dihapus di commit berikutnya.
+# Sengaja HANYA dibaca dari environment variable, tidak pernah ditulis di
+# file ini. Repo ini publik — API key yang ter-commit harus dianggap bocor
+# selamanya, karena tetap tersimpan di riwayat git meski dihapus kemudian.
 #
 # Cara mengisi:
-#   Lokal   : export GEMINI_API_KEY="key-kamu"   (lihat .env.example)
+#   Lokal   : taruh di file .env (lihat .env.example) — .env sudah di-gitignore
 #   Render  : tambahkan sebagai Environment Variable di dashboard
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 
