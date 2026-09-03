@@ -3,8 +3,8 @@ title: JobSeek AI
 emoji: 💼
 colorFrom: yellow
 colorTo: gray
-sdk: docker
-app_port: 7860
+sdk: gradio
+app_file: app.py
 pinned: false
 short_description: Cari lowongan kerja & magang Jabodetabek, lalu siapkan CV dan draf emailnya.
 ---
@@ -136,7 +136,27 @@ Karena itu **platform serverless seperti Vercel tidak cocok** — fungsinya
 berhenti begitu response dikirim, sehingga proses latar belakang terbunuh dan
 polling status berikutnya bisa jatuh ke instance lain yang memorinya kosong.
 
-Pakai platform yang menjalankan proses server biasa. Contoh dengan **Render**:
+Pakai platform yang menjalankan proses server biasa.
+
+### Hugging Face Spaces (gratis, tanpa kartu kredit)
+
+Repo ini sudah berisi frontmatter Space di atas. Buat Space baru dengan SDK
+**Gradio** (SDK Docker sekarang berbayar), lalu isi di tab **Settings**:
+
+| Jenis | Nama | Nilai |
+|---|---|---|
+| Secret | `GEMINI_API_KEY` | key kamu |
+| Variable | `HOST` | `0.0.0.0` |
+| Variable | `PORT` | `7860` |
+
+Spaces menjalankan `python app.py`, dan `main()` sudah membaca kedua variable
+di atas — jadi tidak ada kode yang perlu diubah. `Dockerfile` di repo ini
+tidak dipakai oleh jalur ini; simpan saja untuk platform lain.
+
+### Render
+
+| Pengaturan | Isi |
+|---|---|
 
 | Pengaturan | Isi |
 |---|---|
