@@ -6,7 +6,7 @@ colorTo: gray
 sdk: gradio
 app_file: app.py
 pinned: false
-short_description: Cari lowongan kerja & magang Jabodetabek, lalu siapkan CV dan draf emailnya.
+short_description: Cari lowongan kerja & magang, siapkan CV dan emailnya.
 ---
 
 # 🤖 JobSeek AI
