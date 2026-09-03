@@ -1,0 +1,43 @@
+ARGIANSYAH GALIH PERMATA
+Full Stack Engineer & AI Engineer
+
+Contact:
+- Phone: +6287744415996
+- Email: argiansyahgp@gmail.com
+- Location: Kota Tangerang, Cipondoh, Indonesia
+- Github: (link)
+- LinkedIn: (link)
+- Web Portfolio: (link)
+
+ABOUT ME
+Informatics Graduate from Telkom University with expertise in Full-Stack Development and AI Engineering. Proven track record in building scalable, end-to-end applications and leading teams through complex engineering challenges. Strong in architectural decision-making, structured execution, and delivering production-ready software.
+
+EDUCATION
+- B.C.S. in Informatics, Telkom University Bandung, Indonesia (September 2022 - September 2026)
+- Computer and Network Engineering, SMK Telkom Jakarta, Indonesia (2019 - 2022)
+
+EXPERIENCES
+1. PLN PUSDIKLAT Ragunan, South Jakarta — Frontend Developer (Internship), April 2026 - July 2026
+   - Developed an interactive web dashboard as an educational tool for trainees at PLN PUSDIKLAT.
+   - Collaborated with team members to deliver user-friendly interfaces and clear learning workflows.
+
+2. Telkom University Bandung — Lead Software Engineer (Internship), June 2025 - August 2025
+   - Led a cross-functional engineering team of 4 developers (2 Frontend & 2 Backend) to build a centralized web dashboard for student organizations (Ormawa) under the School of Computing (FIF).
+   - Spearheaded the digitalization of student activity approval workflows, enabling seamless submission and online verification for student affairs officers.
+   - Managed task delegation, system architecture planning, and backend-frontend API coordination to ensure timely delivery and robust integration.
+
+PROJECT EXPERIENCE
+1. Ask Document AI — AI & Full-Stack Developer
+   An internal document assistant that answers employee queries based on internal files with exact page citations using hybrid search (RRF) and AI embeddings.
+
+2. CritiqueAI — AI & Full-Stack Developer
+   Developed an AI-powered customer intelligence tool that transforms unstructured reviews into actionable product decisions by extracting key features and aspect-based sentiment.
+
+SKILLS
+Frontend Development: JavaScript, TypeScript, React.js, Next.js, Tailwind CSS
+Backend & Database: Go, PostgreSQL, MySQL, Prisma ORM
+AI & Machine Learning: Python, TensorFlow, Scikit-Learn, FastAPI, PyTorch
+
+LANGUAGE
+- Indonesian
+- English

@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>JobSeek AI</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%2315171c'/><text x='16' y='24' font-family='Georgia,serif' font-size='21' fill='%23e0b155' text-anchor='middle'>J</text></svg>">
+</head>
+<body>
+
+<!-- Lapisan suasana: cahaya yang bergerak pelan + butiran halus -->
+<div class="ambience" aria-hidden="true">
+  <div class="aurora aurora-1"></div>
+  <div class="aurora aurora-2"></div>
+  <div class="aurora aurora-3"></div>
+  <div class="grain"></div>
+</div>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark" aria-hidden="true">J</span>
+    <h1>JobSeek AI</h1>
+  </div>
+  <div class="topbar-right">
+    <span class="chip">{{ my_name }}</span>
+    {% if not api_key_set %}<span class="chip chip-warn">API key belum diisi</span>{% endif %}
+    {% if not cv_loaded %}<span class="chip chip-warn">CV masih kosong</span>{% endif %}
+  </div>
+</header>
+
+<nav class="tabs" id="mainTabs">
+  <button class="tab active" data-tab="cari">Cari Lowongan</button>
+  <button class="tab" data-tab="manual">Input Manual</button>
+  <button class="tab" data-tab="cv">CV Saya</button>
+</nav>
+
+<main>
+
+<!-- ===================== TAB: CARI LOWONGAN ===================== -->
+<section class="tab-panel active" id="tab-cari">
+
+  <div class="hero">
+    <div class="hero-copy">
+      <p class="eyebrow">Jakarta · Tangerang · Tangerang Selatan</p>
+      <h2 class="hero-title">Find your <em>next job</em> here.</h2>
+      <p class="hero-sub">
+        Search LinkedIn, JobStreet, and Glints at once. Only jobs near you —
+        with your CV and email ready to send.
+      </p>
+
+      <div class="hero-facts">
+        <div>
+          <span class="fact-num">3</span>
+          <span class="fact-label">Job sources</span>
+        </div>
+        <div>
+          <span class="fact-num">3</span>
+          <span class="fact-label">Target areas</span>
+        </div>
+        <div>
+          <span class="fact-num">4</span>
+          <span class="fact-label">Automated steps</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Kata penyemangat, berganti pelan. Berdiri sendiri di kolom kanan
+         supaya tidak pernah menimpa teks di kiri. -->
+    <div class="hero-motto" id="heroMotto" aria-hidden="true">
+      <span>YOU CAN</span><span>DO IT</span>
+    </div>
+  </div>
+
+  <!-- Langkah 1: pilih jenis -->
+  <div class="step" id="stepMode">
+    <div class="step-head">
+      <span class="step-num">1</span>
+      <h2>Mau cari apa hari ini?</h2>
+    </div>
+
+    <div class="mode-grid">
+      <button class="mode-card" data-mode="job">
+        <span class="mode-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+               stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2.5" y="7" width="19" height="13.5" rx="2.2"/>
+            <path d="M8.5 7V5.4A1.9 1.9 0 0 1 10.4 3.5h3.2A1.9 1.9 0 0 1 15.5 5.4V7"/>
+            <path d="M2.5 12.5h19"/>
+          </svg>
+        </span>
+        <span class="mode-title">Lowongan Kerja</span>
+        <span class="mode-desc">Posisi full time, kontrak, dan part time</span>
+      </button>
+
+      <button class="mode-card" data-mode="internship">
+        <span class="mode-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3.5 22 9l-10 5.5L2 9z"/>
+            <path d="M6 11.2v4.9c0 1.6 2.7 3 6 3s6-1.4 6-3v-4.9"/>
+            <path d="M22 9v5.5"/>
+          </svg>
+        </span>
+        <span class="mode-title">Magang / Internship</span>
+        <span class="mode-desc">Program magang dan internship untuk mahasiswa</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Langkah 2: filter -->
+  <div class="step hidden" id="stepFilter">
+    <div class="step-head">
+      <span class="step-num">2</span>
+      <h2>Atur kriteria <span class="mode-label" id="modeLabel"></span></h2>
+      <button class="btn btn-sm" id="backToMode">Ganti jenis</button>
+    </div>
+
+    <div class="filter-grid">
+      <div class="field">
+        <label>Wilayah</label>
+        <div class="checks" id="locationChecks">
+          {% for loc in locations %}
+          <label class="check">
+            <input type="checkbox" value="{{ loc.key }}" checked>
+            <span>{{ loc.label }}</span>
+          </label>
+          {% endfor %}
+        </div>
+        <p class="hint">Pilih Wilayah</p>
+      </div>
+
+      <div class="field">
+        <label>Sumber</label>
+        <div class="checks" id="sourceChecks">
+          {% for s in sources %}
+          <label class="check">
+            <input type="checkbox" value="{{ s.key }}" checked>
+            <span>{{ s.label }}</span>
+          </label>
+          {% endfor %}
+        </div>
+        <p class="hint">
+          Ambil maksimal
+          <input type="number" id="limitInput" value="{{ limit_per_query }}" min="5" max="30">
+          lowongan per kata kunci.
+        </p>
+        <label class="check" style="margin-top:10px">
+          <input type="checkbox" id="enrichInput" {% if enrich_default %}checked{% endif %}>
+          <span>Deteksi mode kerja LinkedIn</span>
+        </label>
+        <p class="hint">Tampilkan WFO/WFH/Hybrid</p>
+      </div>
+
+      <div class="field field-wide">
+        <label>Kata kunci <span class="muted">— satu per baris</span></label>
+        <textarea id="queriesInput" rows="5" spellcheck="false"></textarea>
+      </div>
+    </div>
+
+    <div class="submit-row">
+      <button class="btn btn-primary btn-lg" id="searchBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.7-4.7"/>
+        </svg>
+        Cari Sekarang
+      </button>
+    </div>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress-box hidden" id="searchProgress">
+    <div class="progress-head">
+      <strong id="progressTitle">Mencari lowongan...</strong>
+      <span id="progressPct">0%</span>
+    </div>
+    <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
+    <ul class="log" id="progressLog"></ul>
+  </div>
+
+  <!-- Hasil -->
+  <div class="results hidden" id="resultsBox">
+    <div class="results-head">
+      <h2 id="resultsTitle">Hasil</h2>
+      <div class="results-tools">
+        <select id="filterWorkMode">
+          <option value="">Semua mode kerja</option>
+          <option value="WFH">WFH / Remote</option>
+          <option value="Hybrid">Hybrid</option>
+          <option value="WFO">WFO / On-site</option>
+          <option value="Tidak disebutkan">Tidak disebutkan</option>
+        </select>
+        <select id="filterLocation"><option value="">Semua wilayah</option></select>
+        <select id="filterSource"><option value="">Semua sumber</option></select>
+      </div>
+    </div>
+    <p class="stats" id="resultsStats"></p>
+    <div class="job-grid" id="jobGrid"></div>
+  </div>
+
+</section>
+
+<!-- ===================== TAB: INPUT MANUAL ===================== -->
+<section class="tab-panel" id="tab-manual">
+  <div class="step">
+    <div class="step-head">
+      <span class="step-num">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 20.5 4.8 16 16.4 4.4a2 2 0 0 1 2.8 0l.4.4a2 2 0 0 1 0 2.8L8 19.2z"/>
+        </svg>
+      </span>
+      <h2>Input lowongan manual</h2>
+    </div>
+    <p class="hint" style="margin-bottom:20px">
+      Untuk lowongan yang kamu temukan sendiri, atau kalau job description dari
+      situsnya gagal diambil. Salin isi lowongannya ke kotak di bawah.
+    </p>
+
+    <div class="filter-grid">
+      <div class="field">
+        <label>Posisi</label>
+        <input type="text" id="manTitle" placeholder="Frontend Developer">
+      </div>
+      <div class="field">
+        <label>Perusahaan</label>
+        <input type="text" id="manCompany" placeholder="PT Contoh Teknologi">
+      </div>
+      <div class="field">
+        <label>Lokasi</label>
+        <input type="text" id="manLocation" placeholder="Jakarta Selatan">
+      </div>
+      <div class="field">
+        <label>Link lowongan <span class="muted">— opsional</span></label>
+        <input type="text" id="manUrl" placeholder="https://...">
+      </div>
+      <div class="field field-wide">
+        <label>Job description</label>
+        <textarea id="manDesc" rows="12" placeholder="Tempel isi lowongan di sini..."></textarea>
+      </div>
+    </div>
+
+    <button class="btn btn-primary btn-lg" id="manualBtn">Proses dengan AI</button>
+  </div>
+</section>
+
+<!-- ===================== TAB: CV ===================== -->
+<section class="tab-panel" id="tab-cv">
+  <div class="step">
+    <div class="step-head">
+      <span class="step-num">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/>
+          <path d="M14 3v5h5M9 13h6M9 17h4"/>
+        </svg>
+      </span>
+      <h2>CV Saya</h2>
+    </div>
+    <p class="hint" style="margin-bottom:18px">
+      Ini isi file CV yang dipakai agent. Edit lalu simpan — langsung terpakai
+      untuk proses berikutnya.
+    </p>
+    <textarea id="cvEditor" rows="24" spellcheck="false"></textarea>
+    <div class="row-actions">
+      <button class="btn btn-primary" id="saveCvBtn">Simpan CV</button>
+      <span class="save-status" id="cvStatus"></span>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="site-foot">
+  <span>LinkedIn · JobStreet · Glints — disaring untuk Jabodetabek barat</span>
+</footer>
+
+<!-- ===================== MODAL HASIL AI ===================== -->
+<div class="modal hidden" id="resultModal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <div>
+        <h2 id="modalTitle">Memproses...</h2>
+        <p id="modalSub" class="muted"></p>
+      </div>
+      <button class="icon-btn" id="closeModal" aria-label="Tutup">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div id="modalProgress">
+        <div class="progress-track"><div class="progress-bar" id="aiBar"></div></div>
+        <ul class="log" id="aiLog"></ul>
+        <p class="working-note" id="workingNote">Sedang membaca lowongan ini baik-baik...</p>
+      </div>
+
+      <div id="modalResult" class="hidden">
+        <div class="tabs sub-tabs" id="aiTabs">
+          <button class="tab active" data-ai="fit">Analisis Kecocokan</button>
+          <button class="tab" data-ai="keywords">Kata Kunci</button>
+          <button class="tab" data-ai="cv">CV Disesuaikan</button>
+          <button class="tab" data-ai="email">Draf Email</button>
+        </div>
+        <div class="ai-panel active" id="ai-fit"><pre></pre></div>
+        <div class="ai-panel" id="ai-keywords"><pre></pre></div>
+        <div class="ai-panel" id="ai-cv"><pre></pre></div>
+        <div class="ai-panel" id="ai-email"><pre></pre></div>
+
+        <div class="modal-foot">
+          <button class="btn" id="copyBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="12" height="12" rx="2"/>
+              <path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/>
+            </svg>
+            Salin bagian ini
+          </button>
+          <div class="files" id="modalFiles"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast hidden" id="toast"></div>
+
+<script>
+  window.APP_DATA = {
+    jobQueries: {{ job_queries|tojson }},
+    internshipQueries: {{ internship_queries|tojson }}
+  };
+</script>
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

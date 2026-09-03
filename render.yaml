@@ -1,0 +1,21 @@
+# Blueprint Render — pakai menu "Blueprint" di dashboard supaya semua
+# pengaturan di bawah terisi otomatis. Sisanya tinggal isi GEMINI_API_KEY.
+services:
+  - type: web
+    name: jobseek-ai
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+
+    # --workers 1 WAJIB: status pencarian disimpan di memori proses
+    # (_tasks / _last_jobs di app.py). Lebih dari satu worker membuat
+    # request polling mendarat di proses lain yang memorinya kosong.
+    # --threads 4  : satu proses itu tetap melayani request bersamaan.
+    # --timeout 300: proses AI bisa berjalan sampai ~200 detik per langkah.
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 300
+
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false          # diisi manual di dashboard, tidak disimpan di repo
+      - key: HOST
+        value: 0.0.0.0

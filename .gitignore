@@ -1,0 +1,23 @@
+# Virtual environment
+venv/
+env/
+.venv/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Rahasia — jangan pernah di-commit
+.env
+.env.local
+
+# Hasil generate AI (dibuat ulang tiap dipakai)
+output/*.txt
+
+# macOS
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
