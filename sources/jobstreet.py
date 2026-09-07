@@ -76,7 +76,10 @@ def search(query: str, location_conf: dict, limit: int = 15) -> list[dict]:
                 ),
                 employment_type=", ".join(work_types),
                 salary=item.get("salaryLabel", ""),
+                # listingDateDisplay enak dibaca ("5 hari yang lalu"),
+                # listingDate yang bisa diurutkan ("2026-08-28T10:02:12Z").
                 posted=item.get("listingDateDisplay") or item.get("listingDate", ""),
+                posted_at=item.get("listingDate", ""),
                 teaser=(item.get("teaser") or "").strip(),
                 external_id=job_id,
             )

@@ -238,9 +238,14 @@ function renderResults(result) {
   $("#resultsTitle").textContent =
     currentMode === "internship" ? "Lowongan Magang" : "Lowongan Kerja";
 
+  const stale = (stats.on_mode || 0) - stats.final;
   let statsText =
     `${stats.final} lowongan cocok · dari ${stats.raw} hasil mentah → ` +
-    `${stats.in_area} di wilayahmu → ${stats.unique} setelah duplikat dibuang.`;
+    `${stats.in_area} di wilayahmu → ${stats.unique} setelah duplikat dibuang`;
+  if (stale > 0) {
+    statsText += ` → ${stale} dibuang karena lebih tua dari ${stats.max_age_days} hari`;
+  }
+  statsText += ". Diurutkan dari yang terbaru.";
   if (errors.length) statsText += ` ${errors.length} sumber bermasalah — lihat log di atas.`;
   $("#resultsStats").textContent = statsText;
 

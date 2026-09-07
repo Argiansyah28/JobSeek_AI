@@ -78,7 +78,11 @@ def _parse_cards(html: str) -> list[dict]:
         location = _text(location_el)
         url = link_el.get("href", "") if link_el else ""
         url = url.split("?")[0]
-        posted = (date_el.get("datetime") if date_el else "") or _text(date_el)
+
+        # LinkedIn menaruh tanggal ISO di atribut datetime, dan teks
+        # perkiraannya ("2 weeks ago") di isi elemen.
+        posted_at = date_el.get("datetime", "") if date_el else ""
+        posted = posted_at or _text(date_el)
 
         job_id = ""
         urn = card.get("data-entity-urn", "")
@@ -98,6 +102,7 @@ def _parse_cards(html: str) -> list[dict]:
                 # Tebakan awal dari judul + lokasi; diperbaiki kalau JD diambil.
                 work_mode=base.detect_work_mode(title, location),
                 posted=posted,
+                posted_at=posted_at,
                 external_id=job_id,
             )
         )

@@ -93,6 +93,7 @@ def search(query: str, location_conf: dict, limit: int = 15,
                 employment_type=EMPLOYMENT_MAP.get(item.get("type", ""), item.get("type", "")),
                 salary=_salary_text(item.get("salaries") or []),
                 posted=(item.get("createdAt") or "")[:10],
+                posted_at=item.get("createdAt") or "",
                 external_id=job_id,
                 skills=[
                     s.get("name", "") for s in (item.get("skills") or []) if s.get("name")

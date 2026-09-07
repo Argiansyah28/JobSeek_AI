@@ -124,6 +124,11 @@ INTERNSHIP_HINTS = [
     "mahasiswa", "fresh graduate program", "management trainee",
 ]
 
+# Umur maksimal lowongan yang ditampilkan, dalam hari.
+# Situs lowongan sering menyimpan iklan lama — LinkedIn bahkan masih
+# mengembalikan iklan berumur dua bulan di halaman pertama.
+MAX_AGE_DAYS = 30
+
 # === SUMBER ===
 SOURCES = ["linkedin", "jobstreet", "glints"]
 

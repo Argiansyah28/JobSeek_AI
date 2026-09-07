@@ -15,6 +15,7 @@ lowongan benar-benar diproses AI.
 import re
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from datetime import date, timedelta
 
 from config import (
     ENRICH_LIMIT,
@@ -25,6 +26,7 @@ from config import (
     LIMIT_PER_QUERY,
     LOCATIONS,
     LOCATION_ORDER,
+    MAX_AGE_DAYS,
     SOURCES,
 )
 from sources import REGISTRY
@@ -47,6 +49,7 @@ def search_jobs(
     limit_per_query: int = LIMIT_PER_QUERY,
     cv_text: str = "",
     enrich: bool = ENRICH_LINKEDIN,
+    max_age_days: int = MAX_AGE_DAYS,
     progress=None,
 ) -> dict:
     """
@@ -117,30 +120,72 @@ def search_jobs(
     in_area = _filter_by_location(raw_jobs, location_keys)
     unique = _deduplicate(in_area)
     on_mode = _filter_by_mode(unique, mode)
+    fresh = _filter_by_age(on_mode, max_age_days)
 
     # Pengayaan dijalankan paling akhir supaya hanya lowongan yang benar-benar
     # ditampilkan yang halaman detailnya diunduh.
     if enrich:
-        _enrich_linkedin(on_mode, report)
+        _enrich_linkedin(fresh, report)
 
     report("Menghitung kecocokan dengan CV...", 96)
-    for job in on_mode:
+    for job in fresh:
         job["match_score"] = _match_score(job, cv_text)
 
-    on_mode.sort(key=lambda j: (-j["match_score"], j["company"].lower()))
+    fresh.sort(key=_recency_key, reverse=True)
 
-    report(f"Selesai — {len(on_mode)} lowongan cocok.", 100)
+    report(f"Selesai — {len(fresh)} lowongan cocok.", 100)
 
     return {
-        "jobs": on_mode,
+        "jobs": fresh,
         "errors": errors,
         "stats": {
             "raw": len(raw_jobs),
             "in_area": len(in_area),
             "unique": len(unique),
-            "final": len(on_mode),
+            "on_mode": len(on_mode),
+            "final": len(fresh),
+            "max_age_days": max_age_days,
         },
     }
+
+
+def _filter_by_age(jobs: list[dict], max_age_days: int) -> list[dict]:
+    """
+    Buang lowongan yang sudah lewat batas umur.
+
+    Situs lowongan gemar menampilkan iklan lama — LinkedIn masih
+    mengembalikan iklan berumur dua bulan di halaman pertama.
+
+    Lowongan yang tanggalnya tidak terbaca TETAP ditampilkan: tidak ada
+    bukti bahwa ia basi, dan membuangnya berarti menghilangkan lowongan
+    yang mungkin masih berlaku. Yang seperti ini ditaruh paling bawah
+    saat pengurutan.
+    """
+    if not max_age_days or max_age_days <= 0:
+        return jobs
+
+    cutoff = date.today() - timedelta(days=max_age_days)
+    kept = []
+
+    for job in jobs:
+        posted = sbase.parse_date(job.get("posted_at", ""))
+        if posted is None or posted >= cutoff:
+            kept.append(job)
+
+    return kept
+
+
+def _recency_key(job: dict):
+    """
+    Kunci pengurutan: yang paling baru di atas.
+
+    Dipakai dengan reverse=True, jadi urutannya:
+      1. lowongan bertanggal, dari yang terbaru
+      2. lowongan tanpa tanggal, paling bawah
+    Skor kecocokan jadi penentu kalau tanggalnya sama persis.
+    """
+    posted = sbase.parse_date(job.get("posted_at", ""))
+    return (posted is not None, posted or date.min, job.get("match_score", 0))
 
 
 def _enrich_linkedin(jobs: list[dict], report) -> None:
@@ -282,6 +327,15 @@ def _deduplicate(jobs: list[dict]) -> list[dict]:
             existing["salary"] = job["salary"]
         if not existing["employment_type"] and job["employment_type"]:
             existing["employment_type"] = job["employment_type"]
+
+        # Satu lowongan bisa tayang di dua situs dengan tanggal berbeda.
+        # Ambil yang paling baru, supaya penyaringan umur dan pengurutan
+        # tidak menghukum lowongan hanya karena satu situs memuatnya lebih dulu.
+        existing_date = sbase.parse_date(existing.get("posted_at", ""))
+        job_date = sbase.parse_date(job.get("posted_at", ""))
+        if job_date and (existing_date is None or job_date > existing_date):
+            existing["posted_at"] = job["posted_at"]
+            existing["posted"] = job["posted"]
 
     return list(seen.values())
 

@@ -4,6 +4,8 @@ HTTP client, normalisasi mode kerja (WFH/WFO/Hybrid), dan pencocokan lokasi.
 """
 
 import re
+from datetime import date, datetime
+
 from bs4 import BeautifulSoup
 
 from config import LOCATIONS, LOCATION_ORDER, INTERNSHIP_HINTS
@@ -145,6 +147,43 @@ def match_location(*texts: str) -> tuple[str, str] | tuple[None, None]:
     return None, None
 
 
+def parse_date(value: str) -> date | None:
+    """
+    Ubah tanggal dari sumber mana pun jadi objek date yang bisa dibandingkan.
+
+    Bentuk yang ditemui di lapangan:
+      LinkedIn  -> "2026-09-01"                  (atribut datetime)
+      JobStreet -> "2026-08-28T10:02:12Z"        (ISO dengan zona waktu)
+      Glints    -> "2026-08-18T03:28:50.895Z"    (ISO dengan milidetik)
+
+    Return None kalau tidak bisa dibaca — pemanggil yang memutuskan
+    bagaimana memperlakukan lowongan tanpa tanggal.
+    """
+    if not value:
+        return None
+
+    text = value.strip()
+    # fromisoformat baru mengenal "Z" di Python 3.11+; ini menjaga
+    # supaya tetap jalan kalau nanti dipakai di versi yang lebih lama.
+    if text.endswith("Z"):
+        text = text[:-1] + "+00:00"
+
+    try:
+        return datetime.fromisoformat(text).date()
+    except ValueError:
+        pass
+
+    # Cadangan: ambil bagian YYYY-MM-DD dari depan teks.
+    match = re.match(r"(\d{4})-(\d{2})-(\d{2})", text)
+    if match:
+        try:
+            return date(*(int(g) for g in match.groups()))
+        except ValueError:
+            return None
+
+    return None
+
+
 def looks_like_internship(*texts: str) -> bool:
     """Cek apakah sebuah lowongan kemungkinan besar magang."""
     blob = " ".join(t for t in texts if t).lower()
@@ -162,11 +201,19 @@ def make_job(
     employment_type: str = "",
     salary: str = "",
     posted: str = "",
+    posted_at: str = "",
     teaser: str = "",
     external_id: str = "",
     skills: list[str] | None = None,
 ) -> dict:
-    """Bentuk satu record lowongan dengan struktur yang seragam antar sumber."""
+    """
+    Bentuk satu record lowongan dengan struktur yang seragam antar sumber.
+
+    `posted`    : teks apa adanya untuk ditampilkan ("5 hari yang lalu")
+    `posted_at` : tanggal ISO untuk disaring dan diurutkan ("2026-08-28")
+    Keduanya dipisah karena tiap situs menampilkan tanggal dengan gaya
+    berbeda, sementara pengurutan butuh format yang seragam.
+    """
     return {
         "title": (title or "").strip(),
         "company": (company or "").strip(),
@@ -177,6 +224,7 @@ def make_job(
         "employment_type": employment_type,
         "salary": salary,
         "posted": posted,
+        "posted_at": posted_at,
         "teaser": teaser,
         "external_id": str(external_id),
         "skills": skills or [],
